@@ -2,6 +2,7 @@
 ## The Interview tasks for Labforward
 
 You can check the pdf for the answers to the 1st Task with explanations and images  "Results 1" and "Results 2" are proof of the working code.
+The entire task took a few hours to cover most/all possible answers and to check the efficiency and performance of the code.
 
 ### Party Planner API
 
@@ -16,7 +17,7 @@ This project is a Node.js application designed to help users find the best date 
    - This step ensures that the weather data can be fetched for specific geographic locations.
 
 2. **Fetching Weather Data**:
-   - The Bright Sky weather API is used to retrieve weather data for the given locations and date range.
+   - The Bright Sky weather API retrieves weather data for the given locations and date range.
    - The data includes temperature, wind speed, sunshine, and precipitation for each day.
 
 3. **Calculating Daily Averages**:
