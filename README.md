@@ -1,6 +1,8 @@
 # Labforward-tasks
 ## The Interview tasks for Labforward
 
+You can check the pdf for the answers to the 1st Task with explanations and images  "Results 1" and "Results 2" are proof of the working code.
+
 ### Party Planner API
 
 This project is a Node.js application designed to help users find the best date and location for hosting a party based on weather conditions. The application works in Germany and uses the Google Maps API for geocoding and the Bright Sky weather API for retrieving weather data. It analyzes weather conditions such as temperature, wind speed, sunshine, and precipitation to determine the most optimal day for a party.
