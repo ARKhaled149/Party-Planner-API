@@ -38,6 +38,6 @@ This project is a Node.js application designed to help users find the best date 
 
 ## Output Images
 
-(./images/optimal-date-found.png)
+(Results 1.png)
 
-(./images/no-optimal-date.png)
+(Results 2.png)
