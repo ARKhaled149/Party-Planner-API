@@ -1,0 +1,291 @@
+schema_version: '0.0.1'
+info:
+  version: '2.1.5'
+  uuid: 598d9a2d-29a4-42b1-8d84-5164da78dfbc
+  title: Ice Tea demo
+  description: |
+    ### Description
+
+    Mix your own ice tea and get all your questions answered.
+  author:
+    name: Jan Buch
+    email: jan.buch@labforward.io
+  slug: ice-tea
+config:
+  navigationDelay: 2s
+
+fields:
+  # Instruments
+  Balance:
+    group: Instruments
+    title: Balance
+    type: relationship
+    resourceType: devices
+  Stirrer:
+    group: Instruments
+    title: Stirrer
+    type: relationship
+    resourceType: devices
+
+  # Data Fields Weighing
+  TargetWeight:
+    title: Target Amount Ice Tea
+    type: quantity
+    formatSpecifier: .2f
+    unit: g
+    defaultValue:
+      number: 10.00
+      unit: g
+
+  StableWeight:
+    title: Stable Weight
+    type: quantity
+    formatSpecifier: .2f
+    unit: g
+    hidden: true
+
+  Delta:
+    title: Delta
+    type: quantity
+    formatSpecifier: .2f
+    unit: g
+    hidden: true
+
+
+  # Vortex Fields
+  RPM:
+    title: Rotation Speed
+    type: quantity
+    unit: rpm
+    defaultValue:
+      number: 400
+      unit: rpm
+
+  water:
+    title: Water
+    type: quantity
+    unit: ml
+    defaultValue:
+      number: 250
+      unit: ml
+
+  StirringTimer:
+    title: Stirring timer
+    type: timer
+    defaultDuration: 60s
+    showButtons: true
+
+  Boolean_Success:
+    type: boolean
+    defaultValue: 'false'
+    hidden: true
+
+steps:
+  weighing:
+    info:
+      title: Weighing
+    substeps:
+      - primary: Place an empty flask on {{Balance}}. Tare the balance to continue.
+        confirm: true
+        buttons:
+          - label: Tare
+            key: set_zero
+        behaviors:
+          - when:
+              on_manual:
+                key: set_zero
+            do:
+              - send_command:
+                  device: Balance
+                  command: zeroOrTare
+              - complete_substep
+        devices:
+          - Balance:
+              image: https://i.ibb.co/3zhbtdH/Unbenannt.jpg
+
+
+
+      - primary: Put {{TargetWeight}} of Ice Tea into the flask and press print.
+        expandDescription: true
+        description: |
+          %col
+            ### Stable Weight: {{StableWeight}}
+            <br/>
+            ### Delta Weight: {{Delta}}
+          <br/>
+          <br/>
+          %col
+            {{button|print}}
+
+        buttons:
+          - label: Print
+            key: print
+            placement: manual
+          - label: continue
+            key: continue
+
+        devices:
+          - Balance:
+              image: https://i.ibb.co/3zhbtdH/Unbenannt.jpg
+
+        behaviors:
+          - when:
+              on_manual:
+                key: print
+            do:
+              send_command:
+                device: Balance
+                command: get_weight
+          - when:
+              on_data_point:
+                device: Balance
+                channel: weight
+            do:
+              - set_field:
+                  field: StableWeight
+                  value: data_point.qty
+              - set_field:
+                  field: Delta
+                  value: (TargetWeight - data_point.qty)
+          - when:
+              on_manual:
+                key: continue
+            do:
+              - complete_substep
+
+      - primary: Add {{water}} of Water and a stirring fish into the flask and press confirm to continue.
+        buttons:
+          - label: confirm
+            key: confirm
+        behaviors:
+          - when:
+              on_manual:
+                key: confirm
+            do: complete_substep
+
+  stirring:
+    info:
+      title: Stirring
+    substeps:
+      - primary: Put the flask on {{Stirrer}} and confirm to start stirring.
+        confirm: true
+
+        buttons:
+          - label: Confirm
+            key: confirm
+
+        behaviors:
+          - when:
+              on_manual:
+                key: confirm
+            do: complete_substep
+
+        devices:
+          - Stirrer:
+              image: https://www.ika.com/ika/product_art/images/5020000_1.jpg
+
+      - primary: Stirring at {{RPM}}
+        elements:
+          - type: GaugeControl
+            grid: 3
+            height: 150
+            scope:
+              type: limit
+              params:
+                count: 1
+            inputChannels:
+              - device: Stirrer
+                channels:
+                  - rotation
+        behaviors:
+          - when: on_substep_start
+            do:
+              - start_timer
+              - send_command:
+                  device: Stirrer
+                  command: set_rotation_setpoint
+                  data: SCALAR(RPM)
+              - send_command:
+                  device: Stirrer
+                  command: set_stirrer_status
+                  data: 1
+          - when:
+              - on_timer_stop
+              - on_timer_complete
+            do:
+              - send_command:
+                  device: Stirrer
+                  command: set_stirrer_status
+                  data: 0
+              - complete_substep
+        timer: StirringTimer
+
+  summary:
+    info:
+      title: Summary
+    substeps:
+      - primary: 'Here is your Ice Tea Report:'
+        expandDescription: true
+        description: |
+          %col
+            ### Weighing:
+          %col
+            ### Stirring:
+          <br/>
+          <br/>
+          %col
+            Balance: {{Balance}}
+          %col
+            Stirrer: {{Stirrer}}
+          <br/>
+          <br/>
+          %col
+            Target Weight: {{TargetWeight}}
+          %col
+            Rotation Speed: {{RPM}}
+          <br/>
+          <br/>
+          %col
+            Stable Weight: {{StableWeight}}
+          %col
+            Stirring Time: {{StirringTimer}}
+          <br/>
+          <br/>
+          %col
+            Delta: {{Delta}}
+            <br/>
+            <br/>
+          <br/>
+          <br/>
+          %col
+            ### ELN Export:
+          <br/>
+          <br/>
+          %col
+            Report successfully exported to ELN? {{Boolean_Success}}
+          <br/>
+          <br/>
+        buttons:
+          - label: Export to ELN
+            key: eln
+          - label: Done
+            key: done
+
+
+        behaviors:
+          - when:
+              on_manual:
+                key: eln
+            do:
+              - set_field:
+                  field: Boolean_Success
+                  value: 'true'
+
+          - when:
+              on_manual:
+                key: done
+            do: complete_substep
+flow:
+  - weighing
+  - stirring
+  - summary
