@@ -1,6 +1,3 @@
-# Labforward-tasks
-## The Interview tasks for Labforward
-
 You can check the pdf for the answers to the 1st Task with explanations and images  "Results 1" and "Results 2" are proof of the working code.
 The entire task took a few hours to cover most/all possible answers and to check the efficiency and performance of the code.
 
